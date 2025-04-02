@@ -1,0 +1,91 @@
+
+version: '3.8'
+
+services:
+# redis服务
+  redis:
+    image: redis:6.2.7
+    container_name: redis-server
+    ports:
+      - "26379:6379" # 将主机的 26379 端口映射到容器的 6379 端口 (Redis 默认端口)
+    volumes:
+      - ./config/redis/conf/:/usr/local/etc/redis/
+      - ./config/redis/data/:/data/
+    #添加配置,指定配置文件位置，为映射到容器的配置文件位置
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+# mysql服务
+  mysql:
+    image: mysql:8.0.33 # 或选择你需要的 MySQL 版本，例如 mysql:latest
+    container_name: mysql-db
+    ports:
+      - "3406:3306"   # 将主机的 3306 端口映射到容器的 3306 端口 (MySQL 默认端口)
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456 # 设置 MySQL root 用户的密码，请替换为你的密码
+      # MYSQL_DATABASE: nacos_config # 初始化数据库(后续的初始化sql会在这个库执行)
+      # MYSQL_USER: nacos # 初始化用户(不能是root 会报错, 后续需要给新用户赋予权限)
+      # MYSQL_PASSWORD: nacos # 用户密码
+      TZ: Asia/Shanghai 
+    volumes:
+      - ./config/mysql/data/:/var/lib/mysql/ # 数据持久化，将 MySQL 数据目录挂载到 Docker volume
+      - ./config/mysql/initdb/:/docker-entrypoint-initdb.d/     #初始化磁盘
+      - ./config/mysql/conf/:/etc/mysql/conf.d/ 
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+# nacos服务
+  nacos:
+    image: nacos/nacos-server:latest #  或 nacos/nacos-opensource:latest (根据你的需求选择)
+    container_name: nacos-server
+    platform: linux/arm64 
+    ports:
+      - "8948:8848"   # Nacos 服务器端口
+      - "9948:9848"   # Nacos 集群通信端口 (gRPC 默认端口)
+      - "9949:9849"   # Nacos 集群通信端口 (gRPC 客户端请求端口)
+    environment:
+      MODE: standalone # 设置 Nacos 运行模式为单机模式 (standalone)
+      # 如果需要持久化，可以添加以下配置并挂载数据卷 (例如使用 MySQL 持久化)
+      NACOS_DATASOURCE_PLATFORM: mysql
+      DB_NUM: 1
+      DB_HOST_0: mysql # 这里使用 docker-compose 内的 mysql 服务名
+      DB_PORT_0: 3406
+      DB_NAME_0: nacos_config # 你需要先在 MySQL 中创建 nacos_db 数据库
+      DB_USER_0: root
+      DB_PASSWORD_0: 123456
+    depends_on:
+      - mysql # 如果 Nacos 使用 MySQL 持久化，则依赖 mysql
+    volumes:
+      #   - ./config/nacos/conf/:/home/nacos/conf/ # (可选) 数据持久化，
+      - ./config/nacos/logs/:/home/nacos/logs/
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  nginx:
+    image: nginx:1.20.2
+    restart: always
+    container_name: nginx-webserver
+    ports:
+      - "90:80"     # 将主机的 80 端口映射到容器的 80 端口 (HTTP 默认端口)
+      - "1443:443"   # 将主机的 443 端口映射到容器的 443 端口 (HTTPS 默认端口)
+      - "8090:8090"
+    volumes:
+      - ./config/nginx/conf/nginx.conf:/etc/nginx/nginx.conf # (可选) 将本地 nginx 配置挂载到容器
+      - ./config/nginx/html/:/usr/share/nginx/html/ # (可选) 将本地 html 目录挂载到容器
+      - ./config/nginx/log/:/var/log/nginx/      # (可选) 将 nginx 日志挂载到本地
+    privileged: true
+    depends_on:
+      - redis
+      - mysql
+      - nacos
+    deploy:
+      resources:
+        limits:
+          memory: 256m
