@@ -21,11 +21,13 @@
     1. `SERVER_IP`：改为本机的ip
     2. `CERT_DIR`：改为自己需要存放tls证书的地址
     
-    ![image.png](attachment:761a4951-671e-4932-ad2e-df89a159a19c:image.png)
+    <img width="637" alt="image" src="https://github.com/user-attachments/assets/4b0bb0c7-4904-47cf-bc5d-5aab949ea9b2" />
+
     
 2. 修改镜像加速地址
     
-    ![image.png](attachment:9e4a1c31-00c4-48bb-bbab-819e813d812a:image.png)
+    ![image](https://github.com/user-attachments/assets/b7b22b9a-dbc2-44bc-b195-4c9d1645e23a)
+
     
 
 ### 3、配置docker-compose.yml文件
@@ -67,7 +69,7 @@
     
     按照提示编辑`vim /usr/lib/systemd/system/docker.service`文件
     
-    ![Uploading image.png…]()
+    ![image](https://github.com/user-attachments/assets/92c87de5-c831-4a5e-a873-9ba01c3f22eb)
 
     
     把自己返回的内容添加到`ExecStart`后面  
@@ -87,4 +89,5 @@
         出现`Connection successful`就成功了
         
     
-    ![image.png](attachment:5fdceaf5-32ab-4320-ab21-15367e4d0821:image.png)
+    ![Uploading image.png…]()
+
