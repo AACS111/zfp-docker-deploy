@@ -69,7 +69,8 @@
     
     按照提示编辑`vim /usr/lib/systemd/system/docker.service`文件
     
-    ![image](https://github.com/user-attachments/assets/92c87de5-c831-4a5e-a873-9ba01c3f22eb)
+    ![Uploading image.png…]()
+
 
     
     把自己返回的内容添加到`ExecStart`后面  
@@ -89,5 +90,5 @@
         出现`Connection successful`就成功了
         
     
-    ![Uploading image.png…]()
+    ![image](https://github.com/user-attachments/assets/92c87de5-c831-4a5e-a873-9ba01c3f22eb)
 
